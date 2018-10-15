@@ -1,0 +1,12 @@
+# Zaawansowane języki programowania 
+
+## Ruby
+
+[width="50%"]
+|=======
+|1. |Cloc
+|2. |Flog
+|3. |Flay
+|4. |Breaking Up the Behemoth
+|5. |RuboCop
+|=======
