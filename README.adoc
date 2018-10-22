@@ -2,11 +2,91 @@
 
 ## Ruby
 
-[width="50%"]
+[cols="5,20,75", width="80"]
 |=======
-|1. |Cloc
-|2. |Flog
-|3. |Flay
-|4. |Breaking Up the Behemoth
-|5. |RuboCop
+|1. |https://github.com/AlDanial/cloc[Cloc] |Count lines of code
+|2. |http://ruby.sadi.st/Flog.html[Flog] |ABC complexity
+|3. |http://ruby.sadi.st/Flay.html[Flay] |Structural similarities
+|4. |https://github.com/chad/turbulence[Turbulence] |churn&complexity
+|5. |https://docs.rubocop.org/en/latest/[RuboCop] |static code analyzer (a.k.a. linter) and code formatter (style)
 |=======
+
+
+
+.example2.rb
+[source,ruby]
+----
+def _match_symbol(sym=nil)
+  rp = @remaining_path
+  if rp[0, 1] == "/"
+	if last = rp.index('/', 1)	
+	  if last > 1		
+		@captures << rp[1, last-1]	
+		@remaining_path = rp[last, rp.length]
+	  end
+	elsif rp.length > 1	
+	  @captures << rp[1,rp.length]
+	  @remaining_path = ""
+	end
+  end
+end
+----
+
+.Cloc
+----
+→ cloc example2.rb
+       1 text file.
+       1 unique file.
+       0 files ignored.
+
+http://cloc.sourceforge.net v 1.60  T=0.01 s (107.3 files/s, 1502.1 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Ruby                             1              0              0             14
+-------------------------------------------------------------------------------
+----
+
+
+.Flog
+----
+→ flog -ad example2.rb
+    23.7: flog total
+    23.7: flog/method average
+
+    23.7: main#_match_symbol               example2.rb:1-12
+     5.9:   assignment
+     5.8:   []
+     4.8:   length
+     4.5:   branch
+     2.8:   <<
+     2.8:   lit_fixnum
+     2.4:   >
+     1.8:   -
+     1.1:   index
+     1.0:   ==
+----
+
+[source,ruby]
+----
+def _match_symbol(sym=nil)		# 23.7 =
+  rp = @remaining_path		# 1.475 +
+  if rp[0, 1] == "/"		# 1.0 + 1.45 + 0.35 + 0.35 + 1.125 +
+	if last = rp.index('/', 1)		# 1.1 + 0.35 + 1.475 + 1.125 +
+	  if last > 1		# 1.2 + 0.35 + 1.125 +
+		@captures << rp[1, last-1]		# 1.4 + 1.8 + 1.45 + 0.35 + 0.35 +
+		@remaining_path = rp[last, rp.length]		# 1.45 + 1.6 + 1.475 +
+	  end
+	elsif rp.length > 1		# 1.2 + 1.6 + 0.35 + 1.125 +
+	  @captures << rp[1,rp.length]		# 1.4 + 1.45 + 1.6 + 0.35 +
+	  @remaining_path = ""		# 1.475
+	end
+  end
+end
+----
+
+.Flay
+----
+→ flay example2.rb
+Total score (lower is better) = 0
+----
