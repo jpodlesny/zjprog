@@ -66,6 +66,7 @@ end
 ----
 
 .test.rb
+[source,ruby]
 ----
 class Test
 	def test1		# [red]#39.6# =
