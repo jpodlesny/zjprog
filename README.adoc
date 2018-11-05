@@ -13,80 +13,78 @@
 
 
 
-.example2.rb
+.test.rb
 [source,ruby]
 ----
-def _match_symbol(sym=nil)
-  rp = @remaining_path
-  if rp[0, 1] == "/"
-	if last = rp.index('/', 1)	
-	  if last > 1		
-		@captures << rp[1, last-1]	
-		@remaining_path = rp[last, rp.length]
-	  end
-	elsif rp.length > 1	
-	  @captures << rp[1,rp.length]
-	  @remaining_path = ""
+class Test
+	def test1
+		File.open(ARGV[1], "r").each_line do |line|		
+		  parsed = JSON.parse(line)
+		  if parsed && parsed["address"]
+			diff << parsed unless origs.include? parsed["address"]	
+		  end
+		end
+
+		diff.group_by do |x|
+		  [x["type"], x["file"], x["line"]]
+		end.map { |x, y|
+		  [x, y.count]
+		}.sort { |a, b|
+		  b[1] <=> a[1]
+		}.each { |x, y|
+		  puts "Leaked #{y} #{x[0]} objects at: #{x[1]}:#{x[2]}"
+		}
 	end
-  end
 end
 ----
-
-.Cloc
-----
-→ cloc example2.rb
-       1 text file.
-       1 unique file.
-       0 files ignored.
-
-http://cloc.sourceforge.net v 1.60  T=0.01 s (107.3 files/s, 1502.1 lines/s)
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-Ruby                             1              0              0             14
--------------------------------------------------------------------------------
-----
-
 
 .Flog
 ----
-→ flog -ad example2.rb
-    23.7: flog total
-    23.7: flog/method average
+→ flog -ad test.rb
+    39.6: flog total
+    39.6: flog/method average
 
-    23.7: main#_match_symbol               example2.rb:1-12
-     5.9:   assignment
-     5.8:   []
-     4.8:   length
-     4.5:   branch
-     2.8:   <<
-     2.8:   lit_fixnum
-     2.4:   >
-     1.8:   -
-     1.1:   index
-     1.0:   ==
+    39.6: Test#test1                       test.rb:2-17
+    16.2:   []
+     9.9:   branch
+     3.4:   diff
+     2.0:   lit_fixnum
+     1.6:   group_by
+     1.5:   origs
+     1.5:   count
+     1.4:   <<
+     1.4:   map
+     1.3:   include?
+     1.3:   <=>
+     1.2:   assignment
+     1.2:   parse
+     1.2:   open
+     1.2:   sort
+     1.1:   puts
+     1.0:   each_line
+     1.0:   each
 ----
 
-[source,ruby]
+.test.rb
 ----
-def _match_symbol(sym=nil)		# 23.7 =
-  rp = @remaining_path		# 1.475 +
-  if rp[0, 1] == "/"		# 1.0 + 1.45 + 0.35 + 0.35 + 1.125 +
-	if last = rp.index('/', 1)		# 1.1 + 0.35 + 1.475 + 1.125 +
-	  if last > 1		# 1.2 + 0.35 + 1.125 +
-		@captures << rp[1, last-1]		# 1.4 + 1.8 + 1.45 + 0.35 + 0.35 +
-		@remaining_path = rp[last, rp.length]		# 1.45 + 1.6 + 1.475 +
-	  end
-	elsif rp.length > 1		# 1.2 + 1.6 + 0.35 + 1.125 +
-	  @captures << rp[1,rp.length]		# 1.4 + 1.45 + 1.6 + 0.35 +
-	  @remaining_path = ""		# 1.475
+class Test
+	def test1		# [red]#39.6# =
+		File.[silver]#open#(ARGV[1], "r").[blue]#each_line# do |line|		# [silver]#1.2# [blue]#1.0# + 
+		  [aqua]#parsed =# JSON.[green]#parse#(line)		# [aqua]#1.2# + [green]#1.2# + 
+		  [silver]#if# parsed && parsed["address"]		# [silver]#9.9# +
+			diff [red]#<<# parsed unless [yellow]#origs#.[blue]#include?# parsed["address"]		# [red]#1.4# + [yellow]#1.5# + [blue]#1.3# +
+		  end
+		end
+
+		diff.[silver]#group_by# do |x|		# [silver]#1.6# +
+		  [x["type"], x["file"], x["line"]]
+		end.[green]#map# { |x, y|		# [green]#1.4# +
+		  [x, y.[maroon]#count#]		# [maroon]#1.5# +
+		}.[red]#sort# { |a, b|		# [red]#1.2# +
+		  b[1] [red]#<=># a[1]		# [red]#1.3# +
+		}.[silver]#each# { |x, y|		# [silver]#1.0# + 
+		  [lime]#puts# "Leaked #{y} #{x[0]} objects at: #{x[1]}:#{x[2]}"		# [lime]#1.1# + 
+		}
 	end
-  end
 end
-----
-
-.Flay
-----
-→ flay example2.rb
-Total score (lower is better) = 0
 ----
