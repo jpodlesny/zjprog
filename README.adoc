@@ -14,29 +14,9 @@
 
 
 .test.rb
-[source,ruby]
-----
-class Test
-	def test1
-		File.open(ARGV[1], "r").each_line do |line|		
-		  parsed = JSON.parse(line)
-		  if parsed && parsed["address"]
-			diff << parsed unless origs.include? parsed["address"]	
-		  end
-		end
 
-		diff.group_by do |x|
-		  [x["type"], x["file"], x["line"]]
-		end.map { |x, y|
-		  [x, y.count]
-		}.sort { |a, b|
-		  b[1] <=> a[1]
-		}.each { |x, y|
-		  puts "Leaked #{y} #{x[0]} objects at: #{x[1]}:#{x[2]}"
-		}
-	end
-end
-----
+image::https://github.com/jpodlesny/zjprog/blob/master/test.png[Test,634,320]
+
 
 .Flog
 ----
@@ -65,27 +45,4 @@ end
      1.0:   each
 ----
 
-.test.rb
-[source,ruby]
-----
-class Test
-	def test1		# [red]#39.6# =
-		File.[silver]#open#(ARGV[1], "r").[blue]#each_line# do |line|		# [silver]#1.2# [blue]#1.0# + 
-		  [aqua]#parsed =# JSON.[green]#parse#(line)		# [aqua]#1.2# + [green]#1.2# + 
-		  [silver]#if# parsed && parsed["address"]		# [silver]#9.9# +
-			diff [red]#<<# parsed unless [yellow]#origs#.[blue]#include?# parsed["address"]		# [red]#1.4# + [yellow]#1.5# + [blue]#1.3# +
-		  end
-		end
-
-		diff.[silver]#group_by# do |x|		# [silver]#1.6# +
-		  [x["type"], x["file"], x["line"]]
-		end.[green]#map# { |x, y|		# [green]#1.4# +
-		  [x, y.[maroon]#count#]		# [maroon]#1.5# +
-		}.[red]#sort# { |a, b|		# [red]#1.2# +
-		  b[1] [red]#<=># a[1]		# [red]#1.3# +
-		}.[silver]#each# { |x, y|		# [silver]#1.0# + 
-		  [lime]#puts# "Leaked #{y} #{x[0]} objects at: #{x[1]}:#{x[2]}"		# [lime]#1.1# + 
-		}
-	end
-end
-----
+Source: https://github.com/heroku/discussion/blob/master/script/diff_heaps.rb
